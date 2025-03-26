@@ -1,0 +1,37 @@
+name: Deploy Salesforce to QA
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - closed
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    environment: QA  # Always deploys to QA on merge
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Salesforce CLI (sf)
+        run: |
+          npm install --global @salesforce/cli
+          sf version
+
+      - name: Authenticate with Salesforce (QA)
+        run: |
+          echo ${{ secrets.SF_AUTH_URL }} > ./auth_url.txt
+          sf org login sfdx-url --sfdx-url-file ./auth_url.txt --alias qa-org --set-default
+
+      - name: Deploy to Salesforce
+        run: |
+          sf project deploy start --target-org qa-org --source-dir force-app --json 

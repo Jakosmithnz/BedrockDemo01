@@ -10,7 +10,7 @@ on:
 jobs:
   deploy:
     if: github.event.pull_request.merged == true
-    runs-on: github-linux-runner-2
+    runs-on: ubuntu-latest
     environment: QA  # Always deploys to QA on merge
 
     steps:

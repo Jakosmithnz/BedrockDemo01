@@ -24,7 +24,7 @@ on:
 
 jobs:
   validate:
-    runs-on: github-linux-runner-2
+    runs-on: ubuntu-latest
     environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'QA' }}  # Uses QA for PRs, selected env for manual
 
     steps:

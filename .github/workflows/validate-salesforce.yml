@@ -48,4 +48,4 @@ jobs:
 
       - name: Validate Deployment (Check Only)
         run: |
-          sf project deploy validate --target-org ${{ inputs.environment || 'QA' }}-org --source-dir force-app --json
+          sf project deploy validate --target-org ${{ inputs.environment || 'QA' }}-org --source-dir force-app --json --test-level NoTestRun

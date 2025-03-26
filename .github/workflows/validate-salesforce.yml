@@ -1,0 +1,51 @@
+name: Validate Salesforce Deployment
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select target environment'
+        required: true
+        default: 'QA'
+        type: choice
+        options:
+          - QA
+          - UAT
+          - PROD
+
+jobs:
+  validate:
+    runs-on: github-linux-runner-2
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'QA' }}  # Uses QA for PRs, selected env for manual
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Salesforce CLI (sf)
+        run: |
+          npm install --global @salesforce/cli
+          sf version
+
+      - name: Authenticate with Salesforce
+        run: |
+          echo ${{ secrets.SF_AUTH_URL }} > ./auth_url.txt
+          sf org login sfdx-url --sfdx-url-file ./auth_url.txt --alias ${{ inputs.environment || 'QA' }}-org --set-default
+
+      - name: Validate Deployment (Check Only)
+        run: |
+          sf project deploy validate --target-org ${{ inputs.environment || 'QA' }}-org --source-dir force-app --json
